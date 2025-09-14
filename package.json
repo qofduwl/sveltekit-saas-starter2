@@ -12,9 +12,15 @@
     "test_run": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write --plugin prettier-plugin-svelte ./",
-    "format_check": "prettier --check --plugin prettier-plugin-svelte ./"
+    "format_check": "prettier --check --plugin prettier-plugin-svelte ./",
+    "generate": "plop",
+    "generate:feature": "plop saas-feature",
+    "generate:component": "plop component",
+    "generate:api": "plop api"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@sveltejs/adapter-auto": "^6.0.0",
     "@sveltejs/kit": "^2.21.1",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
@@ -25,6 +31,7 @@
     "@types/jsdom": "^21.1.7",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "change-case": "^5.4.3",
     "daisyui": "^5.0.0",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^9.1.0",
@@ -33,6 +40,7 @@
     "glob": "^10.4.5",
     "html-to-text": "^9.0.5",
     "jsdom": "^24.1.1",
+    "plop": "^4.0.1",
     "postcss": "^8.4.31",
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.2.6",
@@ -42,7 +50,8 @@
     "tailwindcss": "^4.0.9",
     "typescript": "^5.5.0",
     "vite": "^6.3.5",
-    "vitest": "^3.0.7"
+    "vitest": "^3.0.7",
+    "zod": "^3.22.4"
   },
   "type": "module",
   "dependencies": {
