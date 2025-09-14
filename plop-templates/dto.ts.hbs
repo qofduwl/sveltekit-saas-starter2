@@ -1,0 +1,164 @@
+import { z } from 'zod';
+import type { Database } from '$lib/DatabaseDefinitions.js';
+
+// Database types for {{tableName}} table
+export type {{pascalCase featureName}}Row = Database['public']['Tables']['{{tableName}}']['Row'];
+export type {{pascalCase featureName}}Insert = Database['public']['Tables']['{{tableName}}']['Insert'];
+export type {{pascalCase featureName}}Update = Database['public']['Tables']['{{tableName}}']['Update'];
+
+// Zod schemas for validation
+export const {{camelCase featureName}}CreateSchema = z.object({
+  {{#each tableColumns}}
+  {{#if (includes this 'title')}}
+  title: z.string().min(1).max(255),
+  {{/if}}
+  {{#if (includes this 'description')}}
+  description: z.string().optional(),
+  {{/if}}
+  {{#if (includes this 'data')}}
+  data: z.record(z.any()).optional(),
+  {{/if}}
+  {{#if (includes this 'config')}}
+  config: z.record(z.any()).optional(),
+  {{/if}}
+  {{#if (includes this 'status')}}
+  status: z.enum(['active', 'inactive', 'archived']).default('active'),
+  {{/if}}
+  {{#if (includes this 'is_public')}}
+  is_public: z.boolean().default(false),
+  {{/if}}
+  {{#if (includes this 'tags')}}
+  tags: z.array(z.string()).default([]),
+  {{/if}}
+  {{#if (includes this 'metadata')}}
+  metadata: z.record(z.any()).optional(),
+  {{/if}}
+  {{/each}}
+});
+
+export const {{camelCase featureName}}UpdateSchema = {{camelCase featureName}}CreateSchema.partial();
+
+// Request/Response DTOs
+export interface Create{{pascalCase featureName}}Request {
+  {{#each tableColumns}}
+  {{#if (includes this 'title')}}
+  title: string;
+  {{/if}}
+  {{#if (includes this 'description')}}
+  description?: string;
+  {{/if}}
+  {{#if (includes this 'data')}}
+  data?: Record<string, any>;
+  {{/if}}
+  {{#if (includes this 'config')}}
+  config?: Record<string, any>;
+  {{/if}}
+  {{#if (includes this 'status')}}
+  status?: 'active' | 'inactive' | 'archived';
+  {{/if}}
+  {{#if (includes this 'is_public')}}
+  is_public?: boolean;
+  {{/if}}
+  {{#if (includes this 'tags')}}
+  tags?: string[];
+  {{/if}}
+  {{#if (includes this 'metadata')}}
+  metadata?: Record<string, any>;
+  {{/if}}
+  {{/each}}
+}
+
+export interface Update{{pascalCase featureName}}Request extends Partial<Create{{pascalCase featureName}}Request> {}
+
+export interface {{pascalCase featureName}}Response extends {{pascalCase featureName}}Row {
+  // Add computed fields or transformations here if needed
+}
+
+export interface {{pascalCase featureName}}ListResponse {
+  data: {{pascalCase featureName}}Response[];
+  count: number;
+  page?: number;
+  pageSize?: number;
+}
+
+// Service functions
+export class {{pascalCase featureName}}Service {
+  constructor(private supabase: any) {}
+
+  async getAll(userId: string, page = 1, pageSize = 10): Promise<{{pascalCase featureName}}ListResponse> {
+    const offset = (page - 1) * pageSize;
+    
+    const { data, error, count } = await this.supabase
+      .from('{{tableName}}')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
+
+    if (error) throw error;
+
+    return {
+      data: data || [],
+      count: count || 0,
+      page,
+      pageSize
+    };
+  }
+
+  async getById(id: string, userId: string): Promise<{{pascalCase featureName}}Response | null> {
+    const { data, error } = await this.supabase
+      .from('{{tableName}}')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found
+      throw error;
+    }
+
+    return data;
+  }
+
+  async create(userId: string, data: Create{{pascalCase featureName}}Request): Promise<{{pascalCase featureName}}Response> {
+    const validatedData = {{camelCase featureName}}CreateSchema.parse(data);
+    
+    const { data: result, error } = await this.supabase
+      .from('{{tableName}}')
+      .insert({
+        ...validatedData,
+        user_id: userId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return result;
+  }
+
+  async update(id: string, userId: string, data: Update{{pascalCase featureName}}Request): Promise<{{pascalCase featureName}}Response> {
+    const validatedData = {{camelCase featureName}}UpdateSchema.parse(data);
+    
+    const { data: result, error } = await this.supabase
+      .from('{{tableName}}')
+      .update(validatedData)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return result;
+  }
+
+  async delete(id: string, userId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('{{tableName}}')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  }
+}
