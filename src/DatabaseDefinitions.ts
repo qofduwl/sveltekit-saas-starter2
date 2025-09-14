@@ -42,6 +42,46 @@ export interface Database {
         }
         Relationships: []
       }
+      metrics: {
+        Row: {
+          id: string
+          tenant_id: string
+          metric_name: string
+          metric_value: number
+          metric_date: string
+          category: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          metric_name: string
+          metric_value: number
+          metric_date?: string
+          category?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          metric_name?: string
+          metric_value?: number
+          metric_date?: string
+          category?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metrics_tenant_id_fkey"
+            columns: ["tenant_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -76,7 +116,7 @@ export interface Database {
             columns: ["id"]
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       stripe_customers: {
@@ -101,7 +141,7 @@ export interface Database {
             columns: ["user_id"]
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
